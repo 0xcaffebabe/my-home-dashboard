@@ -1,6 +1,6 @@
-export default interface SwitchInfo {
-  id: string
-  name: string
+import BasicComponent from "./BasicComponent"
+
+export default interface SwitchInfo extends BasicComponent{
   state: 'on' | 'off'
   currentPower?: number
   todayConsumption?: number

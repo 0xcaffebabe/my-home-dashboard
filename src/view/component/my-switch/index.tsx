@@ -1,5 +1,5 @@
 import { Switch, Card, Statistic, Row, Col, Segmented, Tag   } from 'antd';
-import styles from './my-switgh.module.css'
+import styles from './my-switch.module.css'
 import * as echarts from 'echarts';
 import { useEffect } from 'react';
 import SwitchInfo from '../../../dto/SwitchInfo';
@@ -35,13 +35,13 @@ export default function MySwitch(props: {switchInfo: SwitchInfo}) {
   useEffect(() => {
     initChart(id)
   })
-  return <div className={styles.mySwitch}>
+  return <div className={styles.mySwitch + ' .component'}>
     <Card title={
       <div>
         <strong>{props.switchInfo.name}</strong>
         <Tag color="#2db7f5" style={{marginLeft: '6px'}}>默认家庭 卧室</Tag>
       </div>
-    } extra={<Switch defaultChecked={props.switchInfo.state == 'on'} />}>
+    } extra={<Switch defaultChecked={props.switchInfo.state === 'on'} />}>
       <Row>
         <Col span={8}>
           <Statistic title="本月用电" value={props.switchInfo.monthConsumption || '-'} suffix="度" />

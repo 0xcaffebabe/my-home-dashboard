@@ -6,3 +6,8 @@
   filter: blur(20px);
   position: fixed;
 }
+
+.component {
+  opacity: 0.8;
+  margin: 10px;
+}
