@@ -9,7 +9,7 @@ import BasicComponent from "../dto/BasicComponent"
 import HumanInfo from "../dto/HumanInfo"
 
 const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI3ODM0NDY3NzkwYTQ0NmM1YmQyOWQyNjQ2YTQ1OGRjMSIsImlhdCI6MTY4MjY1MDAyNywiZXhwIjoxOTk4MDEwMDI3fQ.OPwRen3NT8M_p1SCZE_HjVZyun0q8FZ4GppsMSdn8IE'
-const url = 'http://192.168.31.188:8123'
+const url = 'http://192.168.31.188:8080/'
 
 class HomeAssistantService {
 
