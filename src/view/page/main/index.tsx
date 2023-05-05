@@ -11,12 +11,18 @@ import FanInfo from '../../../dto/FanInfo';
 import MyFan from '../../component/my-fan';
 import IlluminationInfo from '../../../dto/IlluminationInfo';
 import MyIllumination from '../../component/my-illumination';
+import ACInfo from '../../../dto/ACInfo';
+import MyAC from '../../component/my-ac';
+import HumanInfo from '../../../dto/HumanInfo';
+import MyHuman from '../../component/my-human';
 export default function Main() {
   const [ switchList, setSwitchList ] = useState<SwitchInfo[]>([])
   const [ cameraList, setCameraList ] = useState<CameraInfo[]>([])
   const [ thList, setTHList ] = useState<THInfo[]>([])
   const [ fanList, setFanList ] = useState<FanInfo[]>([])
   const [ illuminationList, setIlluminationList ] = useState<IlluminationInfo[]>([])
+  const [ acList, setAcList ] = useState<ACInfo[]>([])
+  const [ humanList, setHumanList ] = useState<HumanInfo[]>([])
 
   useEffect(() => {
     HomeAssistantService.getSwitchList()
@@ -34,25 +40,39 @@ export default function Main() {
     HomeAssistantService.getFanList()
       .then(setFanList)
 
-      HomeAssistantService.getIlluminationList()
+    HomeAssistantService.getIlluminationList()
       .then(setIlluminationList)
+
+    HomeAssistantService.getACList()
+      .then(setAcList)
+    
+    HomeAssistantService.getHumanSensorList()
+      .then(setHumanList)
   }, [])
   return <Row style={{height:'200px'}} gutter={12}>
 
-    {thList.map(v => <Col key={v.id} span={6}>
-      <MyTH thInfo={v} />
-    </Col>)}
+    <Col span={6}>
+      <MyTH thList={thList} />
+    </Col>
     
-    <Col span={12}>
+    <Col span={6}>
       <MyIllumination infoList={illuminationList} />
+    </Col>
+
+    <Col span={6}>
+      <MyHuman humanList={humanList} />
     </Col>
 
     {cameraList.map(v => <Col key={v.name} span={12}>
       <MyCamera cameraInfo={v} />
     </Col>)}
 
-    {fanList.map(v => <Col key={v.name} span={12}>
+    {fanList.map(v => <Col key={v.name} span={6}>
       <MyFan fanInfo={v} />
+    </Col>)}
+
+    {acList.map(v => <Col key={v.name} span={6}>
+      <MyAC acInfo={v} />
     </Col>)}
 
     {switchList.map(v => <Col key={v.id} span={6}>

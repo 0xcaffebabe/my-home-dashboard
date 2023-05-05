@@ -35,11 +35,17 @@ export default function MySwitch(props: {switchInfo: SwitchInfo}) {
   useEffect(() => {
     initChart(id)
   })
-  return <div className={styles.mySwitch + ' .component'}>
+  const offlineTempalte = () => {
+    if (props.switchInfo.state == 'unavailable') {
+      return <Tag color='error'>离线</Tag>
+    }
+  }
+  return <div className={styles.mySwitch + ' component'}>
     <Card title={
       <div>
-        <strong>{props.switchInfo.name}</strong>
-        <Tag color="#2db7f5" style={{marginLeft: '6px'}}>默认家庭 卧室</Tag>
+        <strong>{props.switchInfo.name.split(" ")[0]}</strong>
+        <Tag color="#2db7f5" style={{marginLeft: '6px'}}>{props.switchInfo.room}</Tag>
+        {offlineTempalte()}
       </div>
     } extra={<Switch defaultChecked={props.switchInfo.state === 'on'} />}>
       <Row>
