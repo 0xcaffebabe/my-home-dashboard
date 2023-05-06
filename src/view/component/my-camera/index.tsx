@@ -1,5 +1,6 @@
 import { Card, Tag, Image } from "antd";
 import CameraInfo from "../../../dto/CameraInfo";
+import styles from './my-camera.module.css'
 
 export default function MyCamera(props: { cameraInfo: CameraInfo }) {
   return <Card className="component" title={
@@ -9,6 +10,7 @@ export default function MyCamera(props: { cameraInfo: CameraInfo }) {
     </div>
   }>
     <Image
+    className={styles.CameraImage}
     width='100%'
     src={props.cameraInfo.picture}
     />

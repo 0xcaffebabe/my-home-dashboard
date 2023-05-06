@@ -7,6 +7,9 @@ import IlluminationInfo from "../dto/IlluminationInfo"
 import ACInfo from "../dto/ACInfo"
 import BasicComponent from "../dto/BasicComponent"
 import HumanInfo from "../dto/HumanInfo"
+import dayjs from "dayjs"
+
+type EntityType = 'switch' | 'fan'
 
 const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI3ODM0NDY3NzkwYTQ0NmM1YmQyOWQyNjQ2YTQ1OGRjMSIsImlhdCI6MTY4MjY1MDAyNywiZXhwIjoxOTk4MDEwMDI3fQ.OPwRen3NT8M_p1SCZE_HjVZyun0q8FZ4GppsMSdn8IE'
 const url = 'http://192.168.31.188:8080/'
@@ -31,10 +34,16 @@ class HomeAssistantService {
   }
 
   private extractCommonInfo(data: any): BasicComponent {
+    const subEntities = []
+    for(const i of this.lastStates) {
+      if (i.attributes.parent_entity_id == data.entity_id) {
+        subEntities.push(i.entity_id)
+      }
+    }
     return {
       id: data.entity_id,
       name: data.attributes.friendly_name,
-      subEntities: data.attributes.sub_entities,
+      subEntities,
       room: data.attributes['home_room']
     }
   }
@@ -119,16 +128,18 @@ class HomeAssistantService {
   public async getFanList(): Promise<FanInfo[]> {
     return (await this.getStates())
       .filter(v => v.entity_id.startsWith('fan') && v.entity_id.endsWith('fan'))
-      .map(v => {
-        return {
-          ...this.extractCommonInfo(v),
-          speed: v.attributes['fan.fan_level'],
-          swing: v.attributes['fan.horizontal_swing'],
-          mode: v.attributes['fan.mode'],
-          state: v.state,
-          modePresets: v.attributes['preset_modes']
-        } as FanInfo
-      })
+      .map((v) => this.convertFanInfo(v))
+  }
+
+  public convertFanInfo(v: any): FanInfo {
+    return {
+      ...this.extractCommonInfo(v),
+      speed: v.attributes['fan.fan_level'],
+      swing: v.attributes['fan.horizontal_swing'],
+      mode: v.attributes['fan.mode'],
+      state: v.state,
+      modePresets: v.attributes['preset_modes']
+    }
   }
 
 
@@ -188,7 +199,51 @@ class HomeAssistantService {
       })
   }
 
-  
+
+  /**
+   *
+   * 获取实体状态列表
+   * @param {string} entityId
+   * @param {Date} [end_time=new Date(new Date().getTime() - 24 * 3600 * 1000)]
+   * @return {*}  {Promise<[string, string][]>}
+   * @memberof HomeAssistantService
+   */
+  public async getEntityState(entityId: string, endTime: Date = new Date(new Date().getTime() - 30 * 24 * 3600 * 1000)): Promise<[string, string][]> {
+    const resp = await axios({
+      url: url + `/api/history/period?filter_entity_id=${entityId}&end_time=${dayjs(endTime).toISOString()}`,
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
+    })
+    const data = resp.data[0] as Array<any>
+    if (!data) {
+      return []
+    }
+    return data.map(v => {
+      return [v.last_changed, v.state]
+    })
+  }
+
+  public async executeCommand(path: string, entityId: string, entityType: EntityType, params: any) {
+    const resp = await axios({
+      method: 'post',
+      url: url + `/api/services/${path}`,
+      data: {
+        entity_id: entityId,
+        ...params
+      },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      }
+    })
+    const data = (resp.data as Array<any>)[0]
+    if (data) {
+      if (entityType == 'fan') {
+        return this.convertFanInfo(data)
+      }
+    }
+  }
 }
 const instance = new HomeAssistantService()
 export default instance
