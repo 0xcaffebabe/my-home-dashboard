@@ -12,11 +12,11 @@ import dayjs from "dayjs"
 type EntityType = 'switch' | 'fan'
 
 const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI3ODM0NDY3NzkwYTQ0NmM1YmQyOWQyNjQ2YTQ1OGRjMSIsImlhdCI6MTY4MjY1MDAyNywiZXhwIjoxOTk4MDEwMDI3fQ.OPwRen3NT8M_p1SCZE_HjVZyun0q8FZ4GppsMSdn8IE'
-const url = 'http://192.168.31.188:8080/'
+const url = 'http://192.168.31.188:8080'
 
 class HomeAssistantService {
 
-  private lastGetState = -1
+  public lastGetState = -1
   private lastStates: Array<any> = []
 
   private async getStates(): Promise<Array<any>> {
@@ -67,6 +67,11 @@ class HomeAssistantService {
           todayConsumption: v.attributes['power_cost_today'] / 100,
           monthConsumption: v.attributes['power_cost_month'] / 100
         } as SwitchInfo
+      }).map(v => {
+        if (v.monthConsumption) {
+          v.monthConsumption = parseFloat(v.monthConsumption.toFixed(1))
+        }
+        return v;
       })
   }
 

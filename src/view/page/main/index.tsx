@@ -1,4 +1,4 @@
-import { Col, Row } from 'antd';
+import { Alert, Col, Row } from 'antd';
 import MySwitch from '../../component/my-switch';
 import HomeAssistantService from '../../../service/HomeAssistantService';
 import { useEffect, useState } from 'react';
@@ -15,70 +15,69 @@ import ACInfo from '../../../dto/ACInfo';
 import MyAC from '../../component/my-ac';
 import HumanInfo from '../../../dto/HumanInfo';
 import MyHuman from '../../component/my-human';
+
 export default function Main() {
-  const [ switchList, setSwitchList ] = useState<SwitchInfo[]>([])
-  const [ cameraList, setCameraList ] = useState<CameraInfo[]>([])
-  const [ thList, setTHList ] = useState<THInfo[]>([])
-  const [ fanList, setFanList ] = useState<FanInfo[]>([])
-  const [ illuminationList, setIlluminationList ] = useState<IlluminationInfo[]>([])
-  const [ acList, setAcList ] = useState<ACInfo[]>([])
-  const [ humanList, setHumanList ] = useState<HumanInfo[]>([])
+  const [switchList, setSwitchList] = useState<SwitchInfo[]>([])
+  const [cameraList, setCameraList] = useState<CameraInfo[]>([])
+  const [thList, setTHList] = useState<THInfo[]>([])
+  const [fanList, setFanList] = useState<FanInfo[]>([])
+  const [illuminationList, setIlluminationList] = useState<IlluminationInfo[]>([])
+  const [acList, setAcList] = useState<ACInfo[]>([])
+  const [humanList, setHumanList] = useState<HumanInfo[]>([])
+  const [lastUpdateTime, setLastUpdateTime] = useState(0)
+
+  const refreshData = async () => {
+    HomeAssistantService.getSwitchList().then(setSwitchList).then(() => setLastUpdateTime(HomeAssistantService.lastGetState))
+    HomeAssistantService.getCameraList().then(setCameraList)
+    HomeAssistantService.getTHList().then(setTHList)
+    HomeAssistantService.getFanList().then(setFanList)
+    HomeAssistantService.getIlluminationList().then(setIlluminationList)
+    HomeAssistantService.getACList().then(setAcList)
+    HomeAssistantService.getHumanSensorList().then(setHumanList)
+  }
+
+  const sensorsTempalte = () => {
+    return [<Col sm={12} md={6}>
+      <MyTH thList={thList} />
+    </Col>,
+
+    <Col xs={8} md={3}>
+      <MyIllumination infoList={illuminationList} />
+    </Col>,
+
+    <Col xs={4} md={3}>
+      <MyHuman humanList={humanList} />
+    </Col>,
+    <Col xs={12} md={12}></Col>  
+  ]
+  }
 
   useEffect(() => {
-    HomeAssistantService.getSwitchList()
-      .then(data => {
-        console.log(data)
-        setSwitchList(data)
-      })
-
-    HomeAssistantService.getCameraList()
-      .then(setCameraList)
-
-    HomeAssistantService.getTHList()
-      .then(setTHList)
-    
-    HomeAssistantService.getFanList()
-      .then(setFanList)
-
-    HomeAssistantService.getIlluminationList()
-      .then(setIlluminationList)
-
-    HomeAssistantService.getACList()
-      .then(setAcList)
-    
-    HomeAssistantService.getHumanSensorList()
-      .then(setHumanList)
+    refreshData()
+    const timer = setInterval(refreshData, 10000)
+    return () => clearInterval(timer)
   }, [])
-  return <Row style={{height:'200px'}} gutter={12}>
+  return <Row style={{ height: '200px' }}>
+    <div style={{ textAlign: 'center', width: '100%' }}>
+      {`最后更新时间: ${new Date(lastUpdateTime).toLocaleString()}`}
+    </div>
 
-    <Col span={6}>
-      <MyTH thList={thList} />
-    </Col>
-    
-    <Col span={6}>
-      <MyIllumination infoList={illuminationList} />
-    </Col>
+    {sensorsTempalte()}
 
-    <Col span={6}>
-      <MyHuman humanList={humanList} />
-    </Col>
-
-    {cameraList.map(v => <Col key={v.name} span={12}>
+    {cameraList.map(v => <Col key={v.name} xs={24} md={10}>
       <MyCamera cameraInfo={v} />
     </Col>)}
 
-    {fanList.map(v => <Col key={v.name} span={6}>
+    {fanList.map(v => <Col key={v.name} xs={24} md={6}>
       <MyFan fanInfo={v} />
     </Col>)}
 
-    {acList.map(v => <Col key={v.name} span={6}>
+    {acList.map(v => <Col key={v.name} xs={24} md={8}>
       <MyAC acInfo={v} />
     </Col>)}
 
-    {switchList.map(v => <Col key={v.id} span={6}>
-      <MySwitch switchInfo={v}/>
+    {switchList.map(v => <Col key={v.id} md={8} xs={24}>
+      <MySwitch switchInfo={v} />
     </Col>)}
-    
-
   </Row>
 }
