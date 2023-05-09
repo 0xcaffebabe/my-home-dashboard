@@ -15,6 +15,7 @@ import ACInfo from '../../../dto/ACInfo';
 import MyAC from '../../component/my-ac';
 import HumanInfo from '../../../dto/HumanInfo';
 import MyHuman from '../../component/my-human';
+import MySimpleSwitch from '../../component/my-simple-switch';
 
 export default function Main() {
   const [switchList, setSwitchList] = useState<SwitchInfo[]>([])
@@ -45,10 +46,10 @@ export default function Main() {
       <MyIllumination infoList={illuminationList} />
     </Col>,
 
-    <Col xs={4} md={3}>
+    <Col xs={6} md={3}>
       <MyHuman humanList={humanList} />
     </Col>,
-    <Col xs={12} md={12}></Col>  
+    // <Col xs={12} md={12}></Col>  
   ]
   }
 
@@ -64,6 +65,10 @@ export default function Main() {
 
     {sensorsTempalte()}
 
+    {switchList.filter(v => v.id.indexOf("lemesh") != -1).map(v => <Col key={v.id} xs={6} md={3}>
+      <MySimpleSwitch switch={v} />
+    </Col>)}
+
     {cameraList.map(v => <Col key={v.name} xs={24} md={10}>
       <MyCamera cameraInfo={v} />
     </Col>)}
@@ -76,7 +81,7 @@ export default function Main() {
       <MyAC acInfo={v} />
     </Col>)}
 
-    {switchList.map(v => <Col key={v.id} md={8} xs={24}>
+    {switchList.filter(v => v.id.indexOf("lemesh") == -1).map(v => <Col key={v.id} md={8} xs={24}>
       <MySwitch switchInfo={v} />
     </Col>)}
   </Row>

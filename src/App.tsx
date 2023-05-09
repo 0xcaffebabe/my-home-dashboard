@@ -6,18 +6,23 @@ import { useEffect, useState } from 'react';
 function App() {
   const width = window.innerWidth
   const [picture, setPicture] = useState('')
-  useEffect(() => {
+  const refreshData = () => {
     HomeAssistantService.getCameraList()
       .then((data) => {
         if (data && data.length > 0) {
           setPicture(data[0].picture)
         }
       })
-  })
+  }
+  useEffect(() => {
+    refreshData()
+    const timer = setInterval(refreshData, 10000)
+    return () => clearInterval(timer)
+  }, [])
   return (
     <div className="App">
       <img className='background' alt='背景' width={width + 'px'} height='100%' src={picture} />
-      <Main/>
+      <Main />
     </div>
   );
 }

@@ -58,21 +58,23 @@ class HomeAssistantService {
   public async getSwitchList(): Promise<SwitchInfo[]> {
     const entityList = await this.getStates()
     return entityList.filter(v => v.entity_id.startsWith('switch') && v.entity_id.endsWith('_switch'))
-      .map(v => {
-        return {
-          ...this.extractCommonInfo(v),
-          state: v.state,
-          temperature: v.attributes['switch.temperature'],
-          currentPower: v.attributes['electric_power-11-2'] || v.attributes['electric_power-3-2'] || v.attributes['electric_power-5-6'] / 100,
-          todayConsumption: v.attributes['power_cost_today'] / 100,
-          monthConsumption: v.attributes['power_cost_month'] / 100
-        } as SwitchInfo
-      }).map(v => {
+      .map(v => this.convertSwitchInfo(v)).map(v => {
         if (v.monthConsumption) {
           v.monthConsumption = parseFloat(v.monthConsumption.toFixed(1))
         }
         return v;
       })
+  }
+
+  private convertSwitchInfo(v: any) {
+    return {
+      ...this.extractCommonInfo(v),
+      state: v.state,
+      temperature: v.attributes['switch.temperature'],
+      currentPower: v.attributes['electric_power-11-2'] || v.attributes['electric_power-3-2'] || v.attributes['electric_power-5-6'] / 100,
+      todayConsumption: v.attributes['power_cost_today'] / 100,
+      monthConsumption: v.attributes['power_cost_month'] / 100 || v.attributes['power_consumption']
+    } as SwitchInfo
   }
 
 
@@ -246,6 +248,9 @@ class HomeAssistantService {
     if (data) {
       if (entityType == 'fan') {
         return this.convertFanInfo(data)
+      }
+      if (entityType == 'switch') {
+        return this.convertSwitchInfo(data)
       }
     }
   }
