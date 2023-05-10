@@ -9,7 +9,7 @@ import BasicComponent from "../dto/BasicComponent"
 import HumanInfo from "../dto/HumanInfo"
 import dayjs from "dayjs"
 
-type EntityType = 'switch' | 'fan'
+type EntityType = 'switch' | 'fan' | 'ac'
 
 const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI3ODM0NDY3NzkwYTQ0NmM1YmQyOWQyNjQ2YTQ1OGRjMSIsImlhdCI6MTY4MjY1MDAyNywiZXhwIjoxOTk4MDEwMDI3fQ.OPwRen3NT8M_p1SCZE_HjVZyun0q8FZ4GppsMSdn8IE'
 const url = 'http://192.168.31.188:8080'
@@ -194,16 +194,24 @@ class HomeAssistantService {
   public async getACList(): Promise<ACInfo[]> {
     return (await this.getStates())
       .filter(v => v.entity_id.endsWith('_air_conditioner'))
-      .map(v => {
-        return {
-          ...this.extractCommonInfo(v),
-          state: v.state,
-          temperature: v.attributes.temperature,
-          currentPower: v.attributes['electric_power-5-1'],
-          todayConsumption: v.attributes['power_cost_today'] / 1000,
-          monthConsumption: v.attributes['power_cost_month'] / 1000
-        } as ACInfo
-      })
+      .map(v => this.convertAcInfo(v))
+  }
+
+  private convertAcInfo(v: any): ACInfo {
+    return {
+      ...this.extractCommonInfo(v),
+      state: v.state,
+      temperature: v.attributes.temperature,
+      currentPower: v.attributes['electric_power-5-1'],
+      todayConsumption: v.attributes['power_cost_today'] / 1000,
+      monthConsumption: v.attributes['power_cost_month'] / 1000,
+      fanModes: v.attributes['fan_modes'],
+      fanMode: v.attributes['fan_mode'],
+      hvacModes: v.attributes['hvac_modes'],
+      hvacAction: v.attributes['hvac_action'],
+      swingMode: v.attributes['swing_mode'],
+      swingModes: v.attributes['swing_modes'],
+    } as ACInfo
   }
 
 
@@ -251,6 +259,9 @@ class HomeAssistantService {
       }
       if (entityType == 'switch') {
         return this.convertSwitchInfo(data)
+      }
+      if (entityType == 'ac') {
+        return this.convertAcInfo(data)
       }
     }
   }
