@@ -14,6 +14,13 @@ const fanModeMap = {
   'high': '高速'
 }
 
+const fanModeReverseMap = {
+   '自动':'auto',
+   '低速':'low',
+   '中速':'medium',
+   '高速':'high'
+}
+
 const hvacActionMap = {
   'off': '关闭',
   'cooling': '制冷',
@@ -31,12 +38,21 @@ export default function MyAC(props: { acInfo: ACInfo }) {
       hvac_mode: cmd
     }) as ACInfo)
   }
+
   const setTemperature = async (tmp: number) => {
     await onSwitchChanged(true)
     setAcInfo(await HomeAssistantService.executeCommand('climate/set_temperature', acInfo.id, 'ac', {
       temperature: tmp
     }) as ACInfo)
   }
+
+  const onFanModeChanged = async (mode: string) => {
+    const cmd = (fanModeReverseMap as any)[mode]
+    setAcInfo(await HomeAssistantService.executeCommand('climate/set_fan_mode', acInfo.id, 'ac', {
+      fan_mode: cmd
+    }) as ACInfo)
+  }
+
   return <div className='component'>
     <Card title={
       <div>
@@ -46,7 +62,7 @@ export default function MyAC(props: { acInfo: ACInfo }) {
     } extra={<Switch  disabled={acInfo.state === 'unavailable'} checked={acInfo.state !== 'off' && acInfo.state !== 'unavailable'} onChange={onSwitchChanged} />}>
       <Row style={{ textAlign: 'center' }}>
         <Col span={12}>
-          <Progress strokeColor={{ '0%': '#108ee9', '100%': '#87d068' }} type="dashboard" percent={15 / acInfo.temperature * 100} gapDegree={90} format={(p) => acInfo.temperature + ' ℃'} />
+          <Progress strokeColor={{ '0%': '#108ee9', '100%': '#87d068' }} type="dashboard" percent={(acInfo.temperature - 16) / 15 * 100} gapDegree={90} format={(p) => acInfo.temperature + ' ℃'} />
         </Col>
         <Col span={12}>
           <div>
@@ -54,7 +70,7 @@ export default function MyAC(props: { acInfo: ACInfo }) {
           </div>
           <div style={{ marginTop: '10px' }}>
             <Button size='small' type="primary" onClick={() => setTemperature(24)}>24 ℃</Button>
-            <Button size='small' type="primary" onClick={() => setTemperature(26)} style={{ marginLeft: '5px  ' }}>26 ℃</Button>
+            <Button size='small' type="primary" onClick={() => setTemperature(26)} style={{ marginLeft: '5px' }}>26 ℃</Button>
           </div>
           <div style={{ marginTop: '10px' }}>
             <Switch checkedChildren='扫风' unCheckedChildren="未扫风" checked={acInfo.swingMode != 'off'} />
@@ -62,7 +78,7 @@ export default function MyAC(props: { acInfo: ACInfo }) {
         </Col>
         <Col md={14} xs={24}>
           <div style={{ marginTop: '10px' }}>
-            <Segmented value={fanModeMap[acInfo.fanMode]} options={['自动', '低速', '中速', '高速']} />
+            <Segmented onChange={v => onFanModeChanged(v + '')} value={fanModeMap[acInfo.fanMode]} options={['自动', '低速', '中速', '高速']} />
           </div>
           <div style={{ marginTop: '10px' }}>
             <Segmented value={hvacActionMap[acInfo.hvacAction]} options={['关闭', '制冷', '自动', '制热', '除湿', '送风']} />
