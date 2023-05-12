@@ -1,7 +1,7 @@
 import { Switch, Card, Statistic, Row, Col, Segmented, Tag } from 'antd';
 import styles from './my-switch.module.css'
 import SwitchInfo from '../../../dto/SwitchInfo';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import HomeAssistantService from '../../../service/HomeAssistantService'
 
 export default function MySwitch(props: { switchInfo: SwitchInfo }) {
@@ -26,6 +26,14 @@ export default function MySwitch(props: { switchInfo: SwitchInfo }) {
     setSwitchInfo(await HomeAssistantService.executeCommand('switch/turn_' + cmd, switchInfo.id, 'switch', {}) as SwitchInfo)
     setLoading(false)
   }
+  useEffect(() => {
+    const listener = (data: any) => {
+      const state = HomeAssistantService.convertSwitchInfo(data)
+      setSwitchInfo(state)
+    }
+    HomeAssistantService.addEntityStateListener(switchInfo.id, listener)
+    return () => HomeAssistantService.remoevEntityStateListener(switchInfo.id, listener)
+  }, [])
   return <div className={styles.mySwitch + ' component'}>
     <Card title={
       <div>

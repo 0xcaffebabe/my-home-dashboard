@@ -12,12 +12,52 @@ import dayjs from "dayjs"
 type EntityType = 'switch' | 'fan' | 'ac'
 
 const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI3ODM0NDY3NzkwYTQ0NmM1YmQyOWQyNjQ2YTQ1OGRjMSIsImlhdCI6MTY4MjY1MDAyNywiZXhwIjoxOTk4MDEwMDI3fQ.OPwRen3NT8M_p1SCZE_HjVZyun0q8FZ4GppsMSdn8IE'
-const url = 'http://192.168.31.188:8080'
+
+const host = '192.168.31.188:8080'
+const protocol: 'http' | 'https' = 'https'
+const url = protocol + '://' + host
 
 class HomeAssistantService {
 
   public lastGetState = -1
   private lastStates: Array<any> = []
+  private listeners: Map<string, Function[]> = new Map()
+
+  public constructor() {
+    this.initWSConnection()
+  }
+
+  private async initWSConnection() {
+    const wsProtocol = protocol == 'https' ? 'wss' : 'ws'
+    const webSocket = new WebSocket(`${wsProtocol}://${host}/api/websocket`);
+    webSocket.onerror = (e) => {
+      console.error(e)
+    }
+    webSocket.onmessage = (e) => {
+      const data = JSON.parse(e.data) as any
+      console.log(data)
+      if (data.type == 'auth_required') {
+        webSocket.send(JSON.stringify({
+          "type": "auth",
+          "access_token": token
+        }))
+      }
+      if (data.type == 'auth_ok') {
+        webSocket.send(JSON.stringify({
+          "id": 18,
+          "type": "subscribe_events",
+          "event_type": "state_changed"
+        }))
+      }
+      if (data.type == 'event') {
+        const newState = data.event.data.new_state
+        const observers = this.listeners.get(newState.entity_id)
+        if (observers) {
+          for(var i of observers) i.call(i, newState)
+        }
+      }
+    }
+  }
 
   private async getStates(): Promise<Array<any>> {
     if (new Date().getTime() - this.lastGetState <= 10000) {
@@ -66,7 +106,7 @@ class HomeAssistantService {
       })
   }
 
-  private convertSwitchInfo(v: any) {
+  public convertSwitchInfo(v: any) {
     return {
       ...this.extractCommonInfo(v),
       state: v.state,
@@ -263,6 +303,20 @@ class HomeAssistantService {
       if (entityType == 'ac') {
         return this.convertAcInfo(data)
       }
+    }
+  }
+
+  public addEntityStateListener(id: string, fn: (e: any) => void) {
+    if (!this.listeners.has(id)) {
+      this.listeners.set(id, [])
+    }
+    this.listeners.get(id)?.push(fn)
+  }
+
+  public remoevEntityStateListener(id: string, fn: (e: any) => void) {
+    const index = this.listeners.get(id)?.findIndex(e => e == fn) || -1
+    if (index != -1) {
+      this.listeners.set(id, this.listeners.get(id)?.splice(index, 1) || [])
     }
   }
 }
