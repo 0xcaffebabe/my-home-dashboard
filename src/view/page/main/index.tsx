@@ -16,6 +16,8 @@ import MyAC from '../../component/my-ac';
 import HumanInfo from '../../../dto/HumanInfo';
 import MyHuman from '../../component/my-human';
 import MySimpleSwitch from '../../component/my-simple-switch';
+import MPInfo from '../../../dto/MPInfo';
+import MyMP from '../../component/my-mp';
 
 export default function Main() {
   const [switchList, setSwitchList] = useState<SwitchInfo[]>([])
@@ -25,6 +27,7 @@ export default function Main() {
   const [illuminationList, setIlluminationList] = useState<IlluminationInfo[]>([])
   const [acList, setAcList] = useState<ACInfo[]>([])
   const [humanList, setHumanList] = useState<HumanInfo[]>([])
+  const [mpList, setMPList] = useState<MPInfo[]>([])
   const [lastUpdateTime, setLastUpdateTime] = useState(0)
 
   const refreshData = async () => {
@@ -35,6 +38,7 @@ export default function Main() {
     HomeAssistantService.getIlluminationList().then(setIlluminationList)
     HomeAssistantService.getACList().then(setAcList)
     HomeAssistantService.getHumanSensorList().then(setHumanList)
+    HomeAssistantService.getMPList().then(setMPList)
   }
 
   const sensorsTempalte = () => {
@@ -73,9 +77,10 @@ export default function Main() {
       <MyCamera cameraInfo={v} />
     </Col>)}
 
-    {fanList.map(v => <Col key={v.name} xs={24} md={6}>
-      <MyFan fanInfo={v} />
-    </Col>)}
+    <Col xs={24} md={6}>
+      {fanList.map(v => <MyFan key={v.id} fanInfo={v} />)}
+      {mpList.map(v => <MyMP key={v.id} mpInfo={v} />)}
+    </Col>
 
     {acList.map(v => <Col key={v.name} xs={24} md={8}>
       <MyAC acInfo={v} />

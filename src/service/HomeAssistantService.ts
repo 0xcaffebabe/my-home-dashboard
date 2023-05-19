@@ -8,8 +8,9 @@ import ACInfo from "../dto/ACInfo"
 import BasicComponent from "../dto/BasicComponent"
 import HumanInfo from "../dto/HumanInfo"
 import dayjs from "dayjs"
+import MPInfo from "../dto/MPInfo"
 
-type EntityType = 'switch' | 'fan' | 'ac'
+type EntityType = 'switch' | 'fan' | 'ac' | 'mp'
 
 const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI3ODM0NDY3NzkwYTQ0NmM1YmQyOWQyNjQ2YTQ1OGRjMSIsImlhdCI6MTY4MjY1MDAyNywiZXhwIjoxOTk4MDEwMDI3fQ.OPwRen3NT8M_p1SCZE_HjVZyun0q8FZ4GppsMSdn8IE'
 
@@ -257,6 +258,27 @@ class HomeAssistantService {
 
   /**
    *
+   * 音响列表
+   * @return {*}  {Promise<MPInfo[]>}
+   * @memberof HomeAssistantService
+   */
+  public async getMPList(): Promise<MPInfo[]> {
+    return (await this.getStates())
+      .filter(v => v.entity_id.startsWith('media_player'))
+      .map(v => this.convertMPInfo(v))
+  }
+
+  public convertMPInfo(v: any): MPInfo {
+    return {
+      ...this.extractCommonInfo(v),
+      state: v.state,
+      volume: v.attributes['speaker.volume']
+    } as MPInfo
+  }
+
+
+  /**
+   *
    * 获取实体状态列表
    * @param {string} entityId
    * @param {Date} [end_time=new Date(new Date().getTime() - 24 * 3600 * 1000)]
@@ -302,6 +324,9 @@ class HomeAssistantService {
       }
       if (entityType == 'ac') {
         return this.convertAcInfo(data)
+      }
+      if (entityType == 'mp') {
+        return this.convertMPInfo(data)
       }
     }
   }
