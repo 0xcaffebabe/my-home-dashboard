@@ -42,15 +42,15 @@ export default function Main() {
   }
 
   const sensorsTempalte = () => {
-    return [<Col sm={12} md={6}>
+    return [<Col key="th" sm={12} md={6}>
       <MyTH thList={thList} />
     </Col>,
 
-    <Col xs={8} md={3}>
+    <Col key="il" xs={8} md={3}>
       <MyIllumination infoList={illuminationList} />
     </Col>,
 
-    <Col xs={6} md={3}>
+    <Col key="human" xs={6} md={3}>
       <MyHuman humanList={humanList} />
     </Col>,
     // <Col xs={12} md={12}></Col>  
@@ -77,14 +77,19 @@ export default function Main() {
       <MyCamera cameraInfo={v} />
     </Col>)}
 
-    <Col xs={24} md={6}>
-      {fanList.map(v => <MyFan key={v.id} fanInfo={v} />)}
-      {mpList.map(v => <MyMP key={v.id} mpInfo={v} />)}
+    <Col xs={24} md={14}>
+      {mpList.map(v => <Col span={24}><MyMP key={v.id} mpInfo={v} /></Col>)}
+      <Row>
+        <Col xs={24} md={10}>
+          {fanList.map(v => <MyFan key={v.id} fanInfo={v} />)}
+        </Col>
+
+        {acList.map(v => <Col key={v.id} xs={24} md={14}>
+          <MyAC acInfo={v} />
+        </Col>)}
+      </Row>
     </Col>
 
-    {acList.map(v => <Col key={v.name} xs={24} md={8}>
-      <MyAC acInfo={v} />
-    </Col>)}
 
     {switchList.filter(v => v.id.indexOf("lemesh") == -1).map(v => <Col key={v.id} md={8} xs={24}>
       <MySwitch switchInfo={v} />

@@ -1,7 +1,7 @@
 import { Card, Segmented, Space, Switch, Tag } from "antd";
 import FanInfo from "../../../dto/FanInfo";
 import HomeAssistantService from '../../../service/HomeAssistantService'
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const speedLevel = ['一档', '二档', '三档']
 const presets = ['直吹风', '睡眠风']
@@ -11,6 +11,15 @@ export default function MyFan(props: { fanInfo: FanInfo }) {
   const [switchLoading, setSwitchLoading] = useState(false)
   const [swingLoading, setSwingLoading] = useState(false)
   const [presetLoading, setPresetLoading] = useState(false)
+
+  useEffect(() => {
+    const listener = (data: any) => {
+      const state = HomeAssistantService.convertFanInfo(data)
+      setFanInfo(state)
+    }
+    HomeAssistantService.addEntityStateListener(fanInfo.id, listener)
+    return () => HomeAssistantService.remoevEntityStateListener(fanInfo.id, listener)
+  }, [])
 
   // 开关
   const onSwitchChange = async (checked: boolean) => {

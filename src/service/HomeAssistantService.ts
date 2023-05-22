@@ -129,14 +129,15 @@ class HomeAssistantService {
     const entityList = await this.getStates()
     return entityList
       .filter(v => v.entity_id.startsWith('camera'))
-      .map(v => {
-        return {
-          ...this.extractCommonInfo(v),
-          picture: url + v.attributes.entity_picture
-        } as CameraInfo
-      })
+      .map(v => this.convertCameraInfo(v))
   }
 
+  public convertCameraInfo(v: any) {
+    return {
+      ...this.extractCommonInfo(v),
+      picture: url + v.attributes.entity_picture
+    } as CameraInfo
+  }
 
   /**
    *
@@ -148,22 +149,26 @@ class HomeAssistantService {
     const entityList = await this.getStates()
     return [
       ...entityList.filter(v => v.entity_id.startsWith('weather'))
-      .map(v => {
-        return {
-          ...this.extractCommonInfo(v),
-          temperature: v.attributes.temperature,
-          humidity: v.attributes.humidity
-        } as THInfo
-      })
+      .map(v => this.convertWeatherInfo(v))
       ,...entityList
       .filter(v => v.entity_id.startsWith('sensor.miaomiaoce') && v.entity_id.endsWith('temperature_humidity_sensor'))
-      .map(v => {
-        return {
-          ...this.extractCommonInfo(v),
-          temperature: v.attributes['temperature-2-1'],
-          humidity: v.attributes['relative_humidity-2-2'],
-        } as THInfo
-      })]
+      .map(v => this.convertTHInfo(v))]
+  }
+
+  public convertWeatherInfo(v: any) {
+    return {
+      ...this.extractCommonInfo(v),
+      temperature: v.attributes.temperature,
+      humidity: v.attributes.humidity
+    } as THInfo
+  }
+
+  public convertTHInfo(v: any) {
+    return {
+      ...this.extractCommonInfo(v),
+      temperature: v.attributes['temperature-2-1'],
+      humidity: v.attributes['relative_humidity-2-2'],
+    } as THInfo
   }
 
 
@@ -200,12 +205,14 @@ class HomeAssistantService {
   public async getIlluminationList(): Promise<IlluminationInfo[]> {
     return (await this.getStates())
       .filter(v => v.entity_id.endsWith('_illumination'))
-      .map(v => {
-        return {
-          ...this.extractCommonInfo(v),
-          strength: v.state
-        } as IlluminationInfo
-      })
+      .map(v => this.convertIlluminationInfo(v))
+  }
+
+  public convertIlluminationInfo(v: any) {
+    return {
+      ...this.extractCommonInfo(v),
+      strength: v.state
+    } as IlluminationInfo
   }
 
 

@@ -1,11 +1,21 @@
 import { Card, Switch, Tag } from "antd";
 import SwitchInfo from "../../../dto/SwitchInfo";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import HomeAssistantService from "../../../service/HomeAssistantService";
 
 export default function MySimpleSwitch(props: {switch: SwitchInfo}) {
   const [switchInfo, setSwitchInfo] = useState(props.switch);
   const [loading, setLoading] = useState(false)
+  
+  useEffect(() => {
+    const listener = (data: any) => {
+      const state = HomeAssistantService.convertSwitchInfo(data)
+      setSwitchInfo(state)
+    }
+    HomeAssistantService.addEntityStateListener(switchInfo.id, listener)
+    return () => HomeAssistantService.remoevEntityStateListener(switchInfo.id, listener)
+  }, [])
+  
   const offlineTempalte = () => {
     if (switchInfo.state == 'unavailable') {
       return <Tag color='error'>离线</Tag>
