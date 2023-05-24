@@ -108,13 +108,27 @@ class HomeAssistantService {
   }
 
   public convertSwitchInfo(v: any) {
+    let today = v.attributes['power_cost_today'] / 100
+    if (today > 100) {
+      today /= 10000
+    }
+    if (today) {
+      today = parseFloat(today.toFixed(2))
+    }
+    let month = v.attributes['power_cost_month'] / 100 || v.attributes['power_consumption']
+    if (month > 1000) {
+      month /= 10000
+    }
+    if (month) {
+      month = parseFloat(month.toFixed(2))
+    }
     return {
       ...this.extractCommonInfo(v),
       state: v.state,
       temperature: v.attributes['switch.temperature'],
       currentPower: v.attributes['electric_power-11-2'] || v.attributes['electric_power-3-2'] || v.attributes['electric_power-5-6'] / 100,
-      todayConsumption: v.attributes['power_cost_today'] / 100,
-      monthConsumption: v.attributes['power_cost_month'] / 100 || v.attributes['power_consumption']
+      todayConsumption: today,
+      monthConsumption: month
     } as SwitchInfo
   }
 
@@ -224,13 +238,15 @@ class HomeAssistantService {
    */
   public async getHumanSensorList(): Promise<HumanInfo[]> {
     return (await this.getStates())
-        .filter(v => v.entity_id.endsWith('_motion_sensor') || v.entity_id.endsWith('_occupancy_sensor'))
-        .map(v => {
-          return {
-            ...this.extractCommonInfo(v),
-            state: v.state
-          } as HumanInfo
-        })
+        .filter(v => v.entity_id.endsWith('_motion_sensor') || v.entity_id.endsWith('_occupancy_sensor') || v.entity_id.indexOf("person.") != -1)
+        .map(v => this.convertHumanSensortInfo(v))
+  }
+
+  public convertHumanSensortInfo(v: any) {
+    return {
+      ...this.extractCommonInfo(v),
+      state: v.state
+    } as HumanInfo
   }
 
   /**

@@ -59,8 +59,6 @@ export default function Main() {
 
   useEffect(() => {
     refreshData()
-    const timer = setInterval(refreshData, 10000)
-    return () => clearInterval(timer)
   }, [])
   return <Row style={{ height: '200px' }}>
     <div style={{ textAlign: 'center', width: '100%' }}>
@@ -69,27 +67,26 @@ export default function Main() {
 
     {sensorsTempalte()}
 
+
     {switchList.filter(v => v.id.indexOf("lemesh") != -1).map(v => <Col key={v.id} xs={6} md={3}>
       <MySimpleSwitch switch={v} />
     </Col>)}
-
-    {cameraList.map(v => <Col key={v.name} xs={24} md={10}>
+    
+    
+    {cameraList.map(v => <Col key={v.id} xs={24} md={12}>
       <MyCamera cameraInfo={v} />
     </Col>)}
-
-    <Col xs={24} md={14}>
-      {mpList.map(v => <Col span={24}><MyMP key={v.id} mpInfo={v} /></Col>)}
-      <Row>
-        <Col xs={24} md={10}>
-          {fanList.map(v => <MyFan key={v.id} fanInfo={v} />)}
-        </Col>
-
-        {acList.map(v => <Col key={v.id} xs={24} md={14}>
+    {acList.map(v => <Col key={v.id} xs={24} md={12}>
           <MyAC acInfo={v} />
         </Col>)}
-      </Row>
+
+    <Col xs={24} md={8}>
+      {fanList.map(v => <MyFan key={v.id} fanInfo={v} />)}
     </Col>
 
+    <Col xs={24} md={16}>
+      {mpList.map(v => <Col span={24}><MyMP key={v.id} mpInfo={v} /></Col>)}
+    </Col>
 
     {switchList.filter(v => v.id.indexOf("lemesh") == -1).map(v => <Col key={v.id} md={8} xs={24}>
       <MySwitch switchInfo={v} />

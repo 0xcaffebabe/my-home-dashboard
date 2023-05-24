@@ -19,12 +19,11 @@ function App() {
     const timer = setInterval(refreshData, 10000)
     return () => clearInterval(timer)
   }, [])
-  return (
-    <div className="App">
+  return <div className="App">
       <img className='background' alt='背景' width={width + 'px'} height='100%' src={picture} />
       <Main />
-    </div>
-  );
+  </div>
+  ;
 }
 
 export default App;

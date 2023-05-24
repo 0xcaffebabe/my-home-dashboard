@@ -62,7 +62,7 @@ export default function MyAC(props: { acInfo: ACInfo }) {
     } extra={<Switch  disabled={acInfo.state === 'unavailable'} checked={acInfo.state !== 'off' && acInfo.state !== 'unavailable'} onChange={onSwitchChanged} />}>
       <Row style={{ textAlign: 'center' }}>
         <Col span={12}>
-          <Progress strokeColor={{ '0%': '#108ee9', '100%': '#87d068' }} type="dashboard" percent={(acInfo.temperature - 16) / 15 * 100} gapDegree={90} format={(p) => acInfo.temperature + ' ℃'} />
+          <Progress size="default" strokeColor={{ '0%': '#108ee9', '100%': '#87d068' }} type="dashboard" percent={(acInfo.temperature - 16) / 15 * 100} gapDegree={90} format={(p) => acInfo.temperature + ' ℃'} />
         </Col>
         <Col span={12}>
           <div>
