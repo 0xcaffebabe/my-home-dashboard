@@ -1,4 +1,4 @@
-import { Alert, Col, Row } from 'antd';
+import { Alert, Button, Col, Row, Tag } from 'antd';
 import MySwitch from '../../component/my-switch';
 import HomeAssistantService from '../../../service/HomeAssistantService';
 import { useEffect, useState } from 'react';
@@ -29,6 +29,7 @@ export default function Main() {
   const [humanList, setHumanList] = useState<HumanInfo[]>([])
   const [mpList, setMPList] = useState<MPInfo[]>([])
   const [lastUpdateTime, setLastUpdateTime] = useState(0)
+  const [errMsg, setErrMsg] = useState('')
 
   const refreshData = async () => {
     HomeAssistantService.getSwitchList().then(setSwitchList).then(() => setLastUpdateTime(HomeAssistantService.lastGetState))
@@ -46,23 +47,40 @@ export default function Main() {
       <MyTH thList={thList} />
     </Col>,
 
-    <Col key="il" xs={8} md={3}>
+    <Col key="il" xs={8} md={4}>
       <MyIllumination infoList={illuminationList} />
     </Col>,
 
-    <Col key="human" xs={6} md={3}>
+    <Col key="human" xs={6} md={4}>
       <MyHuman humanList={humanList} />
     </Col>,
     // <Col xs={12} md={12}></Col>  
   ]
   }
 
+  const errMsgTemplate = () => {
+    if (errMsg) {
+      return <Tag color="#f50">{'WebSocket 错误消息: ' + errMsg}</Tag>
+    }
+  }
+
   useEffect(() => {
     refreshData()
+    var timer = setInterval(() => {
+      setLastUpdateTime(HomeAssistantService.lastGetState)
+      setErrMsg(HomeAssistantService.errMsg)
+    }, 1000)
+    return () => clearInterval(timer)
   }, [])
   return <Row style={{ height: '200px' }}>
-    <div style={{ textAlign: 'center', width: '100%' }}>
-      {`最后更新时间: ${new Date(lastUpdateTime).toLocaleString()}`}
+    <div style={{ textAlign: 'center', width: '100%', opacity: 1 }}>
+      <Button style={{float: 'right'}} onClick={() => window.location.reload()}>刷新</Button>
+      <Tag color="#108ee9">
+        {`最后更新时间: ${new Date(lastUpdateTime).toLocaleString()}`}
+      </Tag>
+      <div>
+        {errMsgTemplate()}
+      </div>
     </div>
 
     {sensorsTempalte()}

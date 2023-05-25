@@ -23,16 +23,34 @@ class HomeAssistantService {
   public lastGetState = -1
   private lastStates: Array<any> = []
   private listeners: Map<string, Function[]> = new Map()
+  private webSocket: WebSocket | null = null
+  public errMsg: string = ''
 
   public constructor() {
     this.initWSConnection()
+    setInterval(() => {
+      if (this.webSocket != null) {
+        if (this.webSocket.readyState === WebSocket.CLOSED) {
+          console.log('websocket 挂了 重连')
+          this.initWSConnection()
+        }
+      }
+    }, 5000)
   }
 
   private async initWSConnection() {
     const wsProtocol = protocol == 'https' ? 'wss' : 'ws'
-    const webSocket = new WebSocket(`${wsProtocol}://${host}/api/websocket`);
+    this.webSocket = new WebSocket(`${wsProtocol}://${host}/api/websocket`);
+    const webSocket = this.webSocket!;
     webSocket.onerror = (e) => {
-      console.error(e)
+      this.errMsg = '已关闭'
+      webSocket.close()
+    }
+    webSocket.onopen = (e) => {
+      this.errMsg = ''
+    }
+    webSocket.onclose = (e) => {
+      console.log('websocket 断开')
     }
     webSocket.onmessage = (e) => {
       const data = JSON.parse(e.data) as any
