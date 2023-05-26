@@ -10,7 +10,7 @@ import HumanInfo from "../dto/HumanInfo"
 import dayjs from "dayjs"
 import MPInfo from "../dto/MPInfo"
 
-type EntityType = 'switch' | 'fan' | 'ac' | 'mp'
+type EntityType = 'switch' | 'fan' | 'ac' | 'mp' | 'camera'
 
 const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI3ODM0NDY3NzkwYTQ0NmM1YmQyOWQyNjQ2YTQ1OGRjMSIsImlhdCI6MTY4MjY1MDAyNywiZXhwIjoxOTk4MDEwMDI3fQ.OPwRen3NT8M_p1SCZE_HjVZyun0q8FZ4GppsMSdn8IE'
 
@@ -137,6 +137,10 @@ class HomeAssistantService {
     if (month > 1000) {
       month /= 10000
     }
+    let current = v.attributes['electric_power-11-2'] || v.attributes['electric_power-3-2'] || v.attributes['electric_power-5-6'] / 100
+    if (current) {
+      current = parseFloat(current.toFixed(2))
+    }
     if (month) {
       month = parseFloat(month.toFixed(2))
     }
@@ -144,7 +148,7 @@ class HomeAssistantService {
       ...this.extractCommonInfo(v),
       state: v.state,
       temperature: v.attributes['switch.temperature'],
-      currentPower: v.attributes['electric_power-11-2'] || v.attributes['electric_power-3-2'] || v.attributes['electric_power-5-6'] / 100,
+      currentPower: current,
       todayConsumption: today,
       monthConsumption: month
     } as SwitchInfo
@@ -167,7 +171,8 @@ class HomeAssistantService {
   public convertCameraInfo(v: any) {
     return {
       ...this.extractCommonInfo(v),
-      picture: url + v.attributes.entity_picture
+      picture: url + v.attributes.entity_picture,
+      on: v.attributes['camera_control.on']
     } as CameraInfo
   }
 
@@ -284,9 +289,9 @@ class HomeAssistantService {
       ...this.extractCommonInfo(v),
       state: v.state,
       temperature: v.attributes.temperature,
-      currentPower: v.attributes['electric_power-5-1'],
-      todayConsumption: v.attributes['power_cost_today'] / 1000,
-      monthConsumption: v.attributes['power_cost_month'] / 1000,
+      currentPower: parseFloat(v.attributes['electric_power-5-1'].toFixed(2)),
+      todayConsumption: parseFloat((v.attributes['power_cost_today'] / 1000).toFixed(2)),
+      monthConsumption: parseFloat((v.attributes['power_cost_month'] / 1000).toFixed(2)),
       fanModes: v.attributes['fan_modes'],
       fanMode: v.attributes['fan_mode'],
       hvacModes: v.attributes['hvac_modes'],
@@ -368,6 +373,9 @@ class HomeAssistantService {
       }
       if (entityType == 'mp') {
         return this.convertMPInfo(data)
+      }
+      if (entityType == 'camera') {
+        return this.convertCameraInfo(data)
       }
     }
   }

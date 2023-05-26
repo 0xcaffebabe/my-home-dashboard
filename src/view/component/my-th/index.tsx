@@ -9,7 +9,7 @@ export default function MyTH(props: {thList: THInfo[]}) {
   useEffect(() => {
     const listener = (data: any) => {
       let state: THInfo
-      if (data.id.indexOf("weather")) {
+      if (data.entity_id.indexOf("weather") != -1) {
         state = HomeAssistantService.convertWeatherInfo(data)
       } else {
         state = HomeAssistantService.convertTHInfo(data)
@@ -28,22 +28,20 @@ export default function MyTH(props: {thList: THInfo[]}) {
     setThList(props.thList)
   }, [props.thList])
 
+  const weather = thList.filter(v => v.id.indexOf("weather") != -1)[0]
+  const notWeather = thList.filter(v => v.id.indexOf("weather") == -1)[0]
   return <div className="component" style={{margin: 0}}>
-    <Popover content={thList.map(v => <div key={v.name}>{v.name.split(" ")[0]} 温度: {v.temperature} ℃</div>)} title="详情">
-      <Tag color="#2db7f5" className="component">
-        <div style={{verticalAlign: 'center'}}>
-          <strong>温度</strong>
+    <Tag color="#2db7f5" className="component">
+      <div style={{verticalAlign: 'center'}}>
+          <strong>天气</strong>
         </div>
-        <div>{thList.map(v => v.temperature + '℃').join(" | ")}</div>
-      </Tag>
-    </Popover>
-    <Popover content={thList.map(v => <div key={v.name}>{v.name.split(" ")[0]} 湿度: {v.humidity} %</div>)} title="详情">
-      <Tag color="#108ee9" className="component">
-        <div style={{verticalAlign: 'center'}}>
-          <strong>湿度</strong>
+      {weather?.temperature} ℃ / {weather?.humidity} %
+    </Tag>
+    <Tag color="#108ee9" className="component">
+      <div style={{verticalAlign: 'center'}}>
+          <strong>室内</strong>
         </div>
-        <div>{thList.map(v => v.humidity + '%').join(" | ")}</div>
-      </Tag>
-    </Popover>
+      {notWeather?.temperature} ℃ / {notWeather?.humidity} %
+    </Tag>
   </div>
 }
